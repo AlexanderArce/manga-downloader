@@ -65,7 +65,7 @@ func (m *MangaDex) GetTitle() string {
 }
 
 // FetchChapters returns the chapters of the manga
-func (m MangaDex) FetchChapters() Filterables {
+func (m *MangaDex) FetchChapters() Filterables {
 	id := GetUUID(m.URL)
 
 	var chapters Filterables
@@ -94,8 +94,7 @@ func (m MangaDex) FetchChapters() Filterables {
 		}
 		defer rbody.Close()
 		body := MangaDexFeed{}
-		err = json.NewDecoder(rbody).Decode(&body)
-		if err != nil {
+		if err = json.NewDecoder(rbody).Decode(&body); err != nil {
 			panic(err)
 		}
 
@@ -121,7 +120,7 @@ func (m MangaDex) FetchChapters() Filterables {
 }
 
 // FetchChapter fetches a chapter and its pages
-func (m MangaDex) FetchChapter(f Filterable) Chapter {
+func (m *MangaDex) FetchChapter(f Filterable) Chapter {
 	chap := f.(*MangaDexChapter)
 	// download json
 	rbody, err := http.Get(http.RequestParams{

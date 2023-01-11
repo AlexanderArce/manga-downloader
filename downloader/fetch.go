@@ -11,14 +11,19 @@ import (
 	"github.com/fatih/color"
 )
 
+// File represents a file
 type File struct {
+	// Data is the file data
 	Data []byte
+	// Name is the file name
 	Name string
 }
 
+// Files is a slice of File
 type Files []*File
 
 // FetchChapter downloads all the pages of a chapter
+// TODO: refactor this function using a RWLock
 func FetchChapter(site grabber.Site, chapter grabber.Chapter) (files Files, err error) {
 	var wg sync.WaitGroup
 
@@ -54,23 +59,20 @@ func FetchChapter(site grabber.Site, chapter grabber.Chapter) (files Files, err 
 	return
 }
 
-// FetchFiles gets an online file returning a new *File
-func FetchFile(params http.RequestParams, filename string) (file *File, err error) {
+// FetchFile gets an online file returning a new *File
+func FetchFile(params http.RequestParams, filename string) (*File, error) {
 	body, err := http.Get(params)
 	if err != nil {
-		return
+		return nil, fmt.Errorf("error downloading file %s: %s", filename, err)
 	}
 
 	data := new(bytes.Buffer)
-	io.Copy(data, body)
-	if err != nil {
-		return
+	if _, err = io.Copy(data, body); err != nil {
+		return nil, fmt.Errorf("error copying file %s: %s", filename, err)
 	}
 
-	file = &File{
+	return &File{
 		Data: data.Bytes(),
 		Name: filename,
-	}
-
-	return
+	}, nil
 }

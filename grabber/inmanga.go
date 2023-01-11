@@ -10,7 +10,13 @@ import (
 	"github.com/elboletaire/manga-downloader/http"
 )
 
+// TODO: refactor panics to errors
+// TODO: Looking to other files like mangadex.go, I think the best here is to create an interface
+// or use generics for not having different code for each source.
+
+// InManga wrarps de Grabber and a manga title
 type InManga struct {
+	// Grabber is the base grabber
 	Grabber
 	title string
 }
@@ -28,7 +34,7 @@ func (i *InManga) Test() bool {
 }
 
 // FetchChapters returns the chapters of the manga
-func (i InManga) FetchChapters() Filterables {
+func (i *InManga) FetchChapters() Filterables {
 	id := GetUUID(i.URL)
 
 	// retrieve chapters json list
@@ -43,14 +49,12 @@ func (i InManga) FetchChapters() Filterables {
 		Data string
 	}{}
 
-	err = json.Unmarshal([]byte(body), &raw)
-	if err != nil {
+	if err := json.Unmarshal([]byte(body), &raw); err != nil {
 		panic(err)
 	}
 
 	feed := InMangaChapterFeed{}
-	err = json.Unmarshal([]byte(raw.Data), &feed)
-	if err != nil {
+	if err := json.Unmarshal([]byte(raw.Data), &feed); err != nil {
 		panic(err)
 	}
 
@@ -67,10 +71,11 @@ func (i *InManga) GetTitle() string {
 		URL: i.URL,
 	})
 	if err != nil {
+		// TODO: handle error I do not think that a panic is required here as it stops the entire program
+		// I think the same for the other panics in this file
 		panic(err)
 	}
 	defer body.Close()
-
 	doc, err := goquery.NewDocumentFromReader(body)
 	if err != nil {
 		panic(err)
@@ -81,7 +86,7 @@ func (i *InManga) GetTitle() string {
 }
 
 // FetchChapter fetches the chapter with its pages
-func (i InManga) FetchChapter(chap Filterable) Chapter {
+func (i *InManga) FetchChapter(chap Filterable) Chapter {
 	ichap := chap.(*InMangaChapter)
 	body, err := http.Get(http.RequestParams{
 		URL: "https://inmanga.com/chapter/chapterIndexControls?identification=" + ichap.Id,

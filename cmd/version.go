@@ -7,8 +7,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Tag = "develop"
-var Version = "develop"
+const (
+	// Tag is the git tag of the current build
+	Tag = "develop"
+	// Version is the version of the current build
+	Version = "develop"
+)
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
